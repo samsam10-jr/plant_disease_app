@@ -6,7 +6,7 @@ import time
 
 # 1. CHARGER LE FICHIER UNIQUE
 
-with open('plant_disease_model.pkl', 'rb') as file:
+with open('plant_disease_free_model.pkl', 'rb') as file:
     model = pickle.load(file)
 
 classifier = model['modele']
