@@ -199,23 +199,36 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
         time.sleep(1)
 
         # Étape A : DataFrame de la nouvelle plante
-        new_plant = pd.DataFrame([{
-            'leaf_length':   leaf_length,
-            'leaf_width':    leaf_width,
-            'stem_diameter': stem_diameter,
-            'pesticide':     pesticide,
+        cat_data = pd.DataFrame([{
             'soil_type':     soil_type,
             'weather':       weather
         }])
 
-        # Étape B : OneHotEncoding
-        cat_cols   = ['pesticide', 'soil_type', 'weather']
-        encoded    = Ohe.transform(new_plant[cat_cols])
+        # Étape B : Dataframe numerique
+        num_data   = pd.DataFrame ([{
+            'leaf_leght':   leaf_length,
+            'leaf_width':   leaf_width, 
+            'stem_diameter': stem_diameter               
+        }])
+        
+        #Etape C: OneHotEncoding sur les catégorielles
+        cat_cols = ['soil_type','weather']
+        encoded = Ohe.transform(cat_data[cat_cols])
         col_names  = Ohe.get_feature_names_out(cat_cols)
         df_encoded = pd.DataFrame(encoded.astype(int), columns=col_names)
-        new_plant  = new_plant.drop(columns=cat_cols).reset_index(drop=True)
-        new_plant  = pd.concat([new_plant, df_encoded], axis=1)
+        # Encodage
+        pesti_encoded = 1 if pesticide == "yes" else 0
+        # Créer un DataFrame pour pesticide encodé manuellement
+        pesti_df = pd.DataFrame([{'pesticide_yes': pesti_encoded}])
 
+        # Concaténer les 3 ensemble
+        new_plant = pd.concat([
+           num_data.reset_index(drop=True),
+           pesti_df,
+           df_encoded
+        ], axis=1)
+
+        
         # Étape C : StandardScaler
         new_plant_scaled = sc.transform(new_plant)
 
