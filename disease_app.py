@@ -196,11 +196,20 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
  
         # Étape E : Prédiction KNN
         pred_encoded = classifier.predict(new_plant_scaled)
-        classes_dict = {0: 'blight', 1: 'mildew', 2: 'rust'}
-        pred_label   = classes_dict[int(pred_encoded[0])]
-        probas       = classifier.predict_proba(new_plant_scaled)[0]
-        classes      = ['blight', 'mildew', 'rust']
-        best_prob    = max(probas)
+        # On convertit en string propre peu importe ce que retourne le modèle
+        pred_label = str(pred_encoded[0]).lower().strip()
+
+        # Sécurité : si c'est un chiffre on convertit
+        if pred_label == '0':
+           pred_label = 'blight'
+        elif pred_label == '1':
+           pred_label = 'mildew'
+        elif pred_label == '2':
+           pred_label = 'rust'
+
+         probas    = classifier.predict_proba(new_plant_scaled)[0]
+         classes   = ['blight', 'mildew', 'rust']
+         best_prob = max(probas)
  
     # Résultat coloré avec description
     descriptions = {
