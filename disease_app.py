@@ -2,18 +2,17 @@ import streamlit as st
 import pandas as pd
 import pickle
 import time
-
+ 
 
 # 1. CHARGER LE FICHIER UNIQUE
 
 with open('plant_disease_free_model.pkl', 'rb') as file:
     model = pickle.load(file)
-
+ 
 classifier = model['modele']
 Ohe        = model['ohe']
 sc         = model['scaler']
-le         = model['encodeur']
-
+ 
 # 2. CONFIGURATION + CSS
 
 st.set_page_config(
@@ -21,21 +20,14 @@ st.set_page_config(
     page_icon="🌿",
     layout="centered"
 )
-
+ 
 st.markdown("""
 <style>
-    /* Fond dégradé vert doux */
     .stApp {
         background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #e0f2f1 100%);
     }
-
-    /* Titre */
     h1 { color: #1B5E20 !important; text-align: center; font-size: 2.2rem !important; }
-
-    /* Sous-titres */
     h3 { color: #2E7D32 !important; }
-
-    /* Bouton prédire */
     .stButton > button {
         background: linear-gradient(90deg, #2E7D32, #388E3C) !important;
         color: white !important;
@@ -52,8 +44,6 @@ st.markdown("""
         box-shadow: 0 6px 18px rgba(46,125,50,0.5) !important;
         transform: translateY(-2px) !important;
     }
-
-    /* Boîtes résultat colorées */
     .result-blight {
         background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
         border-left: 6px solid #E53935;
@@ -78,28 +68,6 @@ st.markdown("""
         margin: 12px 0;
         box-shadow: 0 3px 10px rgba(251,140,0,0.15);
     }
-
-    /* Badge maladie */
-    .disease-badge {
-        display: inline-block;
-        padding: 4px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 6px;
-    }
-
-    /* Carte info maladie */
-    .info-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        margin-bottom: 8px;
-        border-top: 4px solid #2E7D32;
-    }
-
-    /* Footer */
     .footer {
         text-align: center;
         color: #777;
@@ -110,7 +78,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
+ 
 
 # 3. HEADER
 
@@ -121,14 +89,14 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 st.divider()
-
+ 
 
 # 4. PHOTOS DES 3 MALADIES
 
 st.markdown("### 🌱 Les 3 maladies que je détecte")
-
+ 
 col_a, col_b, col_c = st.columns(3)
-
+ 
 with col_a:
     st.image(
         "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Tomato_-_late_blight.jpg/320px-Tomato_-_late_blight.jpg",
@@ -139,7 +107,7 @@ with col_a:
     <div style='background:#FFEBEE;border-radius:8px;padding:8px;text-align:center;font-size:12px;color:#C62828'>
         Attaque les feuilles et tiges
     </div>""", unsafe_allow_html=True)
-
+ 
 with col_b:
     st.image(
         "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Powdery_mildew_on_a_courgette_leaf.jpg/320px-Powdery_mildew_on_a_courgette_leaf.jpg",
@@ -150,7 +118,7 @@ with col_b:
     <div style='background:#E3F2FD;border-radius:8px;padding:8px;text-align:center;font-size:12px;color:#1565C0'>
         Poudre blanche sur les feuilles
     </div>""", unsafe_allow_html=True)
-
+ 
 with col_c:
     st.image(
         "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Rust_on_wheat.jpg/320px-Rust_on_wheat.jpg",
@@ -161,21 +129,22 @@ with col_c:
     <div style='background:#FFF3E0;border-radius:8px;padding:8px;text-align:center;font-size:12px;color:#E65100'>
         Taches orangées sur les feuilles
     </div>""", unsafe_allow_html=True)
-
+ 
 st.divider()
+ 
 
 # 5. FORMULAIRE DE SAISIE
 
 st.markdown("### 🔬 Caractéristiques de la plante")
 st.caption("Remplis les informations ci-dessous puis clique sur Prédire")
-
+ 
 col1, col2 = st.columns(2)
-
+ 
 with col1:
     leaf_length   = st.slider("🍃 Longueur des feuilles (cm)", 3.0, 18.0, 10.0)
     leaf_width    = st.slider("🍃 Largeur des feuilles (cm)",  0.5,  9.0,  5.0)
     stem_diameter = st.slider("🌱 Diamètre de la tige (cm)",  0.1,  1.8,  1.0)
-
+ 
 with col2:
     soil_type = st.selectbox("🪨 Type de sol",         ["clay", "loamy", "sandy"],
                              format_func=lambda x: {"clay":"🟤 Argileux (clay)",
@@ -187,73 +156,53 @@ with col2:
                                                      "cloudy":"☁️ Nuageux"}[x])
     pesticide = st.selectbox("🧪 Pesticide utilisé ?", ["no", "yes"],
                              format_func=lambda x: {"no":"❌ Non", "yes":"✅ Oui"}[x])
-
+ 
 st.divider()
-
+ 
 
 # 6. PRÉDICTION
 
 if st.button("🔍 Prédire la maladie", use_container_width=True):
-
+ 
     with st.spinner("🤖 Analyse de la plante en cours..."):
         time.sleep(1)
-
-        # Étape A : DataFrame de la nouvelle plante
-        cat_data = pd.DataFrame([{
-            'soil_type':     soil_type,
-            'weather':       weather
-        }])
-
-        # Étape B : Dataframe numerique
-        num_data   = pd.DataFrame ([{
-            'leaf_legth':   leaf_length,
-            'leaf_width':   leaf_width, 
-            'stem_diameter': stem_diameter               
-        }])
-        
-        #Etape C: OneHotEncoding sur les catégorielles
-        cat_cols = ['soil_type','weather']
-        encoded = Ohe.transform(cat_data[cat_cols])
-        col_names  = Ohe.get_feature_names_out(cat_cols)
-        df_encoded = pd.DataFrame(encoded.astype(int), columns=col_names)
-        # Encodage
+ 
+        # Étape A : Encodage manuel de pesticide
         pesti_encoded = 1 if pesticide == "yes" else 0
-        # Créer un DataFrame pour pesticide encodé manuellement
-        pesti_df = pd.DataFrame([{'pesticide_yes': pesti_encoded}])
-
-        # Concaténer les 3 ensemble
+ 
+        # Étape B : OHE sur soil_type et weather uniquement
+        cat_data  = pd.DataFrame([{'soil_type': soil_type, 'weather': weather}])
+        cat_cols  = ['soil_type', 'weather']
+        encoded   = Ohe.transform(cat_data[cat_cols])
+        col_names = Ohe.get_feature_names_out(cat_cols)
+        df_encoded = pd.DataFrame(encoded.astype(int), columns=col_names)
+ 
+        # Étape C : Construire new_plant dans l'ordre EXACT du notebook
         new_plant = pd.DataFrame([{
-            'leaf_length':          leaf_length,
-            'leaf_width':           leaf_width,
-            'stem_diameter':        stem_diameter,
-            'pesticide':            pesti_encoded,
-            'soil_type_clay':       df_encoded['soil_type_clay'].values[0],
-            'soil_type_loamy':      df_encoded['soil_type_loamy'].values[0],
-            'soil_type_sandy':      df_encoded['soil_type_sandy'].values[0],
-            'weather_cloudy':       df_encoded['weather_cloudy'].values[0],
-            'weather_rainy':        df_encoded['weather_rainy'].values[0],
-            'weather_sunny':        df_encoded['weather_sunny'].values[0],
+            'leaf_length':     leaf_length,
+            'leaf_width':      leaf_width,
+            'stem_diameter':   stem_diameter,
+            'pesticide':       pesti_encoded,
+            'soil_type_clay':  df_encoded['soil_type_clay'].values[0],
+            'soil_type_loamy': df_encoded['soil_type_loamy'].values[0],
+            'soil_type_sandy': df_encoded['soil_type_sandy'].values[0],
+            'weather_cloudy':  df_encoded['weather_cloudy'].values[0],
+            'weather_rainy':   df_encoded['weather_rainy'].values[0],
+            'weather_sunny':   df_encoded['weather_sunny'].values[0],
         }])
-
-       # Étape E : StandardScaler
+ 
+        # Étape D : StandardScaler
         new_plant_scaled = sc.transform(new_plant)
-        new_plant = pd.concat([
-           num_data.reset_index(drop=True),
-           pesti_df,
-           df_encoded
-        ], axis=1)
-
-        
-        # Étape D : Prédiction KNN
-        # Étape D : Prédiction KNN
+ 
+        # Étape E : Prédiction KNN
         pred_encoded = classifier.predict(new_plant_scaled)
         classes_dict = {0: 'blight', 1: 'mildew', 2: 'rust'}
         pred_label   = classes_dict[int(pred_encoded[0])]
         probas       = classifier.predict_proba(new_plant_scaled)[0]
-        classes      = ['blight', 'mildew', 'rust']  # ← plus besoin de le.classes_
+        classes      = ['blight', 'mildew', 'rust']
         best_prob    = max(probas)
-
-    # ── Résultat coloré avec description
+ 
+    # Résultat coloré avec description
     descriptions = {
         'blight': ('🔴', 'BLIGHT — Mildiou',
                    'Maladie fongique qui attaque les feuilles, tiges et fruits. '
@@ -265,29 +214,30 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
                    'Champignon parasite créant des taches orangées en relief. '
                    'Se propage par le vent et les éclaboussures d\'eau.')
     }
-
+ 
     icon, titre, desc = descriptions[pred_label]
-
+ 
     st.markdown(f"""
     <div class="result-{pred_label}">
         <h3 style="margin:0 0 8px 0">{icon} Maladie détectée : {titre}</h3>
         <p style="margin:0; color:#444; font-size:14px">{desc}</p>
     </div>
     """, unsafe_allow_html=True)
-
-    # ── Probabilités
+ 
+    # Probabilités
     st.markdown("### 📊 Niveau de confiance par maladie")
     icons_cls = {'blight': '🔴', 'mildew': '🔵', 'rust': '🟠'}
     for cls, prob in zip(classes, probas):
         st.write(f"{icons_cls[cls]} **{cls.upper()}**")
         st.progress(float(prob), text=f"{prob*100:.1f}%")
-
-    # ── Ballons + message confiance
+ 
+    # Ballons + message confiance
     if best_prob >= 0.5:
         st.balloons()
         st.success(f"🎯 Bonne confiance du modèle : **{best_prob*100:.1f}%**")
     else:
         st.warning(f"⚠️ Confiance faible ({best_prob*100:.1f}%) — plusieurs maladies sont proches.")
+ 
 
 # 7. FOOTER
 
