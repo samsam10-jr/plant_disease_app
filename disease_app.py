@@ -6,13 +6,13 @@ import time
 
 # 1. CHARGER LE FICHIER UNIQUE
 
-with open('knn.pkl', 'rb') as f:
-    tout = pickle.load(f)
+with open('plant_disease_model.pkl', 'rb') as file:
+    model = pickle.load(file)
 
-classifier = tout['modele']
-Ohe        = tout['ohe']
-sc         = tout['scaler']
-le         = tout['encodeur']
+classifier = model['modele']
+Ohe        = model['ohe']
+sc         = model['scaler']
+le         = model['encodeur']
 
 # 2. CONFIGURATION + CSS
 
