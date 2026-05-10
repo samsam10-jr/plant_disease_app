@@ -206,7 +206,7 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
 
         # Étape B : Dataframe numerique
         num_data   = pd.DataFrame ([{
-            'leaf_leght':   leaf_length,
+            'leaf_legth':   leaf_length,
             'leaf_width':   leaf_width, 
             'stem_diameter': stem_diameter               
         }])
@@ -222,6 +222,21 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
         pesti_df = pd.DataFrame([{'pesticide_yes': pesti_encoded}])
 
         # Concaténer les 3 ensemble
+        new_plant = pd.DataFrame([{
+            'leaf_length':          leaf_length,
+            'leaf_width':           leaf_width,
+            'stem_diameter':        stem_diameter,
+            'pesticide':            pesti_encoded,
+            'soil_type_clay':       df_encoded['soil_type_clay'].values[0],
+            'soil_type_loamy':      df_encoded['soil_type_loamy'].values[0],
+            'soil_type_sandy':      df_encoded['soil_type_sandy'].values[0],
+            'weather_cloudy':       df_encoded['weather_cloudy'].values[0],
+            'weather_rainy':        df_encoded['weather_rainy'].values[0],
+            'weather_sunny':        df_encoded['weather_sunny'].values[0],
+        }])
+
+       # Étape E : StandardScaler
+        new_plant_scaled = sc.transform(new_plant)
         new_plant = pd.concat([
            num_data.reset_index(drop=True),
            pesti_df,
@@ -229,9 +244,6 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
         ], axis=1)
 
         
-        # Étape C : StandardScaler
-        new_plant_scaled = sc.transform(new_plant)
-
         # Étape D : Prédiction KNN
         pred_encoded = classifier.predict(new_plant_scaled)
         pred_label   = le.inverse_transform(pred_encoded)[0]
