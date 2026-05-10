@@ -246,7 +246,8 @@ if st.button("🔍 Prédire la maladie", use_container_width=True):
         
         # Étape D : Prédiction KNN
         pred_encoded = classifier.predict(new_plant_scaled)
-        pred_label   = le.inverse_transform(pred_encoded)[0]
+        classes_dict = {0: 'blight', 1: 'mildew', 2: 'rust'}
+        pred_label = classes_dict[int(pred_encoded[0])]
         probas       = classifier.predict_proba(new_plant_scaled)[0]
         classes      = le.classes_
         best_prob    = max(probas)
